@@ -19,16 +19,12 @@ const studentSchema = new mongoose.Schema({
         enum:['Male','Female'],
         require:true
     },
-    isStudent: {
-        type: Boolean, 
-        require:true
-    },
     IsVerified: {
         type: Boolean,
         default: false
     },
-    teacherId: {
-        type: String, 
+    assignedTeacher: {
+        type: mongoose.Schema.Types.ObjectId,
         require:true,
         ref: "Teachers"
     },

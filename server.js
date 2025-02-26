@@ -1,3 +1,4 @@
+require('./config/database')
 const express = require("express")
 
 const PORT = 2020;

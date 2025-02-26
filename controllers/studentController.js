@@ -2,7 +2,7 @@ const studentModel = require("../models/student");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-exports.create = async (req, res) => {
+exports.createStudent = async (req, res) => {
     try {
         const { teacherId } = req.params
        

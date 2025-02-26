@@ -1,4 +1,4 @@
-const userModel = require("../models/user");
+const adminModel = require("../models/admin");
 const jwt = require("jsonwebtoken");
 
 exports.authenticate = async (req, res, next) => {
@@ -16,7 +16,7 @@ exports.authenticate = async (req, res, next) => {
       });
     }
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await userModel.findById(decodedToken.userId);
+    const user = await adminModel.findById(decodedToken.userId);
     if (!user) {
       return res.status(404).json({
         message: "Authentication Failed: User not found",
@@ -75,3 +75,42 @@ exports.adminAuth = async (req, res, next) => {
     });
   }
 };
+
+exports.superAdminAuth = async (req, res, next) => {
+    try {
+      const auth = req.headers.authorization;
+      if (!auth) {
+        return res.status(400).json({
+          message: "Token not found",
+        });
+      }
+  
+      const token = auth.split(" ")[1];
+      if (!token) {
+        return res.status(400).json({
+          message: "Invalid token",
+        });
+      }
+  
+      const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await userModel.findById(decodedToken.userId);
+      if (!user) {
+        return res.status(404).json({
+          message: "Authentication Failed: User not found",
+        });
+      }
+      
+      if (user.isSuperAdmin !== true) {
+        return res.status(401).json({
+          message: "Unauthorized: Please contact Admin",
+        });
+      }
+  
+      req.user = decodedToken;
+      next();
+    } catch (error) {
+      res.status(500).json({
+        message: "Internal Server Error" + error.message,
+      });
+    }
+  };

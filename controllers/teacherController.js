@@ -2,7 +2,7 @@ const studentModel = require ('../models/student');
 const bcrypt = require ('bcrypt');
 const sendEmail = require ('../middleware/nodemailer');
 const jwt = require ('jsonwebtoken');
-const { signUpTemplate } = require('../utils/mailTemplates');
+const { signUpTemplate } = require('../utils/mailTemplate');
 
 exports.register =async (req, res) => {
     try {

@@ -1,4 +1,4 @@
- const signUpTemplate= (verifyLink, firstName) => {
+ exports.signUpTemplate= (verifyLink, firstName) => {
   return   `
     <!DOCTYPE html>
 <html lang="en">
@@ -88,5 +88,3 @@
 </html>
     `
  }
-
- module.exports= { signUpTemplate } 

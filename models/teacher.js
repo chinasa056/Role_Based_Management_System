@@ -19,16 +19,20 @@ const teacherSchema= new mongoose.Schema({
         enum: ['Male', 'Female'],
         required: true
     },
-    isTeacher: {
+    isAdmin: {
+        type: Boolean,
+        default: true
+    },
+    isVerified: {
         type: Boolean,
         default: false
     },
     studentsId: [{
         type: mongoose.SchemaTypes.objectId,
-        ref: "Students"
+        ref: "Teachers"
     }],
 }, {timestamps: true});
 
-const teacherModel= mongoose.model('Teachers', userSchema);
+const teacherModel= mongoose.model('Teachers', teacherSchema);
 
 module.exports = teacherModel;

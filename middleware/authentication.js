@@ -22,13 +22,18 @@ exports.authenticate = async (req, res, next) => {
 
         let user;
         user = await adminModel.findById(decodedToken.userId);
-        user = await teacherModel.findById(decodedToken.userId)
-        user = await studentModel.findById(decodedToken.userId)
+        if (!user) {
+            user = await teacherModel.findById(decodedToken.userId);
+        }
+        if (!user) {
+            user = await studentModel.findById(decodedToken.userId);
+        }
         if (!user) {
             return res.status(404).json({
                 message: "Authentication Failed: User not found",
             });
         }
+
         req.user = decodedToken;
 
         next();
@@ -64,7 +69,9 @@ exports.adminAuth = async (req, res, next) => {
 
         let user;
         user = await adminModel.findById(decodedToken.userId);
-        user = await teacherModel.findById(decodedToken.userId)
+        if (!user) {
+            user = await teacherModel.findById(decodedToken.userId);
+        }
         if (!user) {
             return res.status(404).json({
                 message: "Authentication Failed: User not found",

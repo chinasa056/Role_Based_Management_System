@@ -1,7 +1,10 @@
-const { getAllTeachers, getAllStudents, updateTeacher, updateStudent, deleteStudent, deleteTeacher, registerAdmin, changePassword, forgotPassword, removeTeacherAdminAccess, getStudentByStack } = require("../controllers/adminController");
+const { getAllTeachers, getAllStudents, updateTeacher, updateStudent, deleteStudent, deleteTeacher, registerAdmin, changePassword, forgotPassword, removeTeacherAdminAccess, getStudentByStack, verifyAdmin } = require("../controllers/adminController");
 const { superAdminAuth, authenticate, adminAuth } = require("../middleware/authentication");
 
 const router = require("express").Router();
+
+router.get
+("/admin_verify/:token", verifyAdmin)
 
 router.post("/register/", registerAdmin)
 

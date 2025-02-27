@@ -268,16 +268,16 @@ exports.changePassword = async (req, res) => {
                 message: "User not found"
             })
         };
-        
+
         // verify the current password
         const passwordVerify = await bcrypt.compare(password, admin.password)
-        if(passwordVerify === false) {
+        if (passwordVerify === false) {
             return res.status(404).json({
                 message: "incorrect password"
             })
         }
 
-        if(newPassword !== confirmPassword) {
+        if (newPassword !== confirmPassword) {
             return res.status(400).json({
                 message: "new password and confirm password does not match"
             })
@@ -405,11 +405,36 @@ exports.getAllStudents = async (req, res) => {
     }
 };
 
+exports.getStudentByStack = async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        const { stack } = req.body;
+
+        const student = await studentModel.findOne({ _id: studentId }, { stack: stack });
+
+        if (!student) {
+            return res.status(404).json({
+                message: 'Student not found'
+            })
+        };
+
+        res.status(200).json({
+            message: 'Student info below',
+            data: student
+        })
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({
+            message: 'Error Getting student'
+        })
+    }
+}
+
 exports.updateTeacher = async (req, res) => {
     try {
         const { teacherId } = req.params
 
-        const { fullName } = req.body;
+        const { fullName, stack } = req.body;
         const teacher = await teacherModel.findById(teacherId)
 
         if (!teacher) {
@@ -419,7 +444,8 @@ exports.updateTeacher = async (req, res) => {
         };
 
         const data = {
-            fullName
+            fullName,
+            stack
         }
 
         const updatedTeacher = await teacherModel.findByIdAndUpdate(teacherId, data, { new: true })
@@ -444,7 +470,7 @@ exports.updateStudent = async (req, res) => {
     try {
         const { studentId } = req.params
 
-        const { fullName } = req.body;
+        const { fullName, stack } = req.body;
 
         const student = await studentModel.findById(studentId)
 
@@ -455,7 +481,8 @@ exports.updateStudent = async (req, res) => {
         };
 
         const data = {
-            fullName
+            fullName,
+            stack
         }
 
         const updatedStudent = await studentModel.findByIdAndUpdate(student, data, { new: true })
@@ -523,6 +550,36 @@ exports.deleteTeacher = async (req, res) => {
         res.status(500).json({
             message: "Internal server error",
         });
+    }
+};
+
+exports.removeTeacherAdminAccess = async (req, res) => {
+    try {
+        const { teacherId } = req.params;
+
+        const teacher = await teacherModel.findById(teacherId);
+
+        if (!teacher) {
+            return res.status(404).json({
+                message: "Teacher not found"
+            })
+        };
+
+        if (teacher.isAdmin === true) {
+            teacher.isAdmin = false;
+        }
+        await teacher.save();
+
+        res.status(200).json({
+            message: "Admin access removed successfully"
+        })
+
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({
+            message: "Internal Server Error"
+        })
+
     }
 }
 

@@ -6,6 +6,7 @@ const { sendEmail } = require("../middleware/nodemailer");
 const studentModel = require("../models/student");
 const teacherModel = require("../models/teacher");
 
+// ONBOARDING STAGE
 exports.registerAdmin = async (req, res) => {
     try {
         const { fullName, email, password, gender } = req.body;
@@ -154,6 +155,154 @@ exports.verifyAdmin = async (req, res) => {
     }
 };
 
+exports.forgotPassword = async (req, res) => {
+    try {
+        // get the email from the request boddy
+        const { email } = req.body;
+
+        if (email == null) {
+            return res.status(400).json({
+                message: "Please enter your email"
+            })
+        };
+
+        const admin = await adminModel.findOne({ email: email.toLowerCase() })
+        if (!user) {
+            return res.status(404).json({
+                message: "user not found"
+            })
+        };
+
+        // generate a token for the user
+        const token = await jwt.sign({ userid: user._id }, process.env.JWT_SECRET, { expiresIn: "10mins" })
+
+        const link = `${req.protocol}: //${req.get("host")}/api/v1/forgot_password/${token}`
+        const firstName = admin.fullName.split(" ")[0]
+
+        // pass the email details to a variable
+        const mailDetails = {
+            subject: "password reset",
+            email: user.email,
+            html: forgotPasswordTemplate(link, firstName)
+        }
+
+        // await nodemailer to send the email
+        await sendEmail(mailDetails)
+
+        // send a sucess response
+        res.status(200).json({
+            message: "Reset password initiated, please check your eamil for the reset link "
+        })
+
+    } catch (error) {
+        console.error(error);
+        if (error instanceof jwt.JsonWebTokenError) {
+            return res.status(500).json({
+                message: "Link Expired"
+            })
+        }
+        res.status(500).json({
+            message: "Internal server error"
+        })
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    try {
+        const { token } = req.params
+        const { password, confirmPassword } = req.body;
+        // verify the token id dtill valid, extract the userID from the tokn and use it to find the usr in the database
+        const { adminId } = await jwt.verify(token, process.env.JWT_SECRET);
+        // find the user in the database
+        const admin = await adminModel.findById(adminId)
+
+        if (!admin) {
+            return res.status(404).json({
+                message: "Admin not found"
+            })
+        };
+
+        // confirm the password matches the confirm password
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                message: "Password does not match"
+            })
+        };
+
+        // generate a salt and hash password for the user
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        admin.password = hashedPassword
+
+        // save the changes to the database
+        await user.save()
+
+        // senda sucess response
+        res.status(200).json({
+            message: "Password reset successful"
+        })
+
+
+    } catch (error) {
+        console.error(error);
+        if (error instanceof jwt.JsonWebTokenError) {
+            return res.status(500).json({
+                message: "Link Expired"
+            })
+        }
+        res.status(500).json({
+            message: "Internal server error"
+        })
+    }
+};
+
+exports.changePassword = async (req, res) => {
+    try {
+        const { password, newPassword, confirmPassword } = req.body;
+        const { adminId } = req.user;
+
+        const admin = await adminModel.findById(adminId);
+        if (!useradmin) {
+            return res.status(404).json({
+                message: "User not found"
+            })
+        };
+        
+        // verify the current password
+        const passwordVerify = await bcrypt.compare(password, admin.password)
+        if(passwordVerify === false) {
+            return res.status(404).json({
+                message: "incorrect password"
+            })
+        }
+
+        if(newPassword !== confirmPassword) {
+            return res.status(400).json({
+                message: "new password and confirm password does not match"
+            })
+        };
+        //  encrypt the password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt)
+
+        admin.password = hashedPassword;
+
+        await admin.save();
+
+        res.status(200).json({
+            message: "Password changed successfully"
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Internal server error"
+        })
+    }
+}
+
+
 exports.loginAdmin = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -209,6 +358,7 @@ exports.loginAdmin = async (req, res) => {
     }
 };
 
+//  CRUD OPERATIONS
 // - POST /teachers - Add a new teacher.
 //   - POST /students - Add a new student.
 //   - GET /teachers - View all teachers.

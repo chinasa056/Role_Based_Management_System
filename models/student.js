@@ -28,6 +28,10 @@ const studentSchema = new mongoose.Schema({
         require:true,
         ref: "Teachers"
     },
+    teacherName: {
+        type: String,
+        required: true
+    }
 
 },{timestamps: true})
 

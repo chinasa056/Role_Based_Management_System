@@ -1,5 +1,5 @@
-const { getAllTeachers, getAllStudents, updateTeacher, updateStudent, deleteStudent, deleteTeacher, registerAdmin } = require("../controllers/adminController");
-const { adminAuth, superAdminAuth } = require("../middleware/authentication");
+const { getAllTeachers, getAllStudents, updateTeacher, updateStudent, deleteStudent, deleteTeacher, registerAdmin, changePassword, forgotPassword } = require("../controllers/adminController");
+const { superAdminAuth, authenticate } = require("../middleware/authentication");
 
 const router = require("express").Router();
 
@@ -16,6 +16,11 @@ router.patch("/student/:studentId", superAdminAuth, updateStudent)
 router.delete("/student/:studentId", superAdminAuth, deleteStudent)
 
 router.delete("/teacher/:teacherId", superAdminAuth, deleteTeacher)
+
+router.post("/forgot_password", authenticate, forgotPassword)
+
+router.post("/change-password", authenticate, changePassword)
+
 
 
 

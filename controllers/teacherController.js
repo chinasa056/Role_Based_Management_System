@@ -7,7 +7,7 @@ const { signUpTemplate } = require('../utils/mailTemplate');
 
 exports.register =async (req, res) => {
     try {
-          const { fullName, email, gender, password } =req.body;
+          const { fullName, email, gender, stack, password } =req.body;
           const teacherExists = await teacherModel.findOne({email: email.toLowerCase()});
           if (teacherExists ){
             return res.status(400).json ({
@@ -22,10 +22,11 @@ exports.register =async (req, res) => {
                 fullName,
                 email,
                 password: hashedPassword,
+                stack,
                 gender,
             });
             
-            const token = await jwt.sign({teacherId: teacher._id}, process.env.JWT_SECRET, {expiresIn: '1h'});
+            const token = jwt.sign({teacherId: teacher._id}, process.env.JWT_SECRET, {expiresIn: '1h'});
 
             const link = `${req.protocol}://${req.get('host')}/api/v1/user-verify/${token}`
             const firstName = teacher.fullName.split(' ')[1]
@@ -172,7 +173,7 @@ exports.login = async (req,res) => {
              })
           };
  
-          const token = await jwt.sign({ teacherId: teacherExists._id }, process.env.JWT_SECRET, {expiresIn: '1day'});
+          const token = await jwt.sign({ teacherId: teacher._id }, process.env.JWT_SECRET, {expiresIn: '15min'});
  
            res.status(200).json ({
              message: 'Login successful',

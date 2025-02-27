@@ -80,7 +80,7 @@ exports.verifyAdmin = async (req, res) => {
                 if (err instanceof jwt.JsonWebTokenError) {
                     const decodedToken = jwt.decode(token);
 
-                    const admin = await userModel.findById(decodedToken.userId);
+                    const admin = await adminModel.findById(decodedToken.userId);
 
                     if (admin === null) {
                         res.status(404).json({
@@ -104,12 +104,12 @@ exports.verifyAdmin = async (req, res) => {
 
                     const link = `${req.protocol}://${req.get(
                         "host"
-                    )}/api/v1/user-verify/${newToken}`;
-                    const firstName = user.fullName.split(" ")[0];
+                    )}/api/v1/admin_verify/${newToken}`;
+                    const firstName = admin.fullName.split(" ")[0];
 
                     // pass the mail options into an object variable
                     const mailDetails = {
-                        email: user.email,
+                        email: admin.email,
                         subject: "Email verification",
                         html: html(link, firstName),
                     };
@@ -123,15 +123,13 @@ exports.verifyAdmin = async (req, res) => {
                 // if there was no error
             } else {
                 console.log(payload);
-                // check for the user in the database using the token id
-                const Admin = await userModel.findById(payload.userId);
+                const Admin = await adminModel.findById(payload.userId);
                 if (Admin === null) {
                     return res.status(404).json({
                         message: "Admin not found",
                     });
                 }
 
-                // check if the user has been verified
                 if (Admin.isVerified === true) {
                     return res.status(400).json({
                         message: "Admin has already been verified",
@@ -139,10 +137,10 @@ exports.verifyAdmin = async (req, res) => {
                 }
 
                 Admin.isVerified = true;
-                await user.save();
+                await Admin.save();
 
                 res.status(200).json({
-                    message: "User verified successfully",
+                    message: "admin verified successfully",
                 });
             }
         });

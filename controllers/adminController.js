@@ -33,11 +33,10 @@ exports.registerAdmin = async (req, res) => {
         const token = jwt.sign(
             { userId: newAdmin._id },
             process.env.JWT_SECRET,
-            { expiresIn: "1hour" }
-        );
+            { expiresIn: "1hour" });
 
         const link = `${req.protocol}://${req.get(
-            "host"
+        "host"
         )}/api/v1/admin_verify/${token}`;
 
         const firstName = newAdmin.fullName.split(" ")[0];

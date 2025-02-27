@@ -5,7 +5,7 @@ const sendEmail = require('../middleware/nodemailer');
 const jwt = require('jsonwebtoken');
 const { signUpTemplate } = require('../utils/mailTemplate');
 
-exports.register = async (req, res) => {
+exports.registerTeacher = async (req, res) => {
     try {
         const { fullName, email, gender, stack, password } = req.body;
         const teacherExists = await teacherModel.findOne({ email: email.toLowerCase() });

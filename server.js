@@ -11,9 +11,9 @@ const PORT = 2020;
 const app = express();
 
 app.use(express.json());
-app.use(adminRouter)
-app.use(teacherRouter)
-app.use(studentRouter)
+app.use("/api/v1", adminRouter)
+app.use("/api/v1",teacherRouter)
+app.use("/api/v1",studentRouter)
 
 
 app.listen(PORT, () => {

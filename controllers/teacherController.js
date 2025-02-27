@@ -1,62 +1,62 @@
-const studentModel = require ('../models/student');
+const studentModel = require('../models/student');
 const teacherModel = require("../models/teacher")
-const bcrypt = require ('bcrypt');
-const sendEmail = require ('../middleware/nodemailer');
-const jwt = require ('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const sendEmail = require('../middleware/nodemailer');
+const jwt = require('jsonwebtoken');
 const { signUpTemplate } = require('../utils/mailTemplate');
 
-exports.register =async (req, res) => {
+exports.register = async (req, res) => {
     try {
-          const { fullName, email, gender, stack, password } =req.body;
-          const teacherExists = await teacherModel.findOne({email: email.toLowerCase()});
-          if (teacherExists ){
-            return res.status(400).json ({
+        const { fullName, email, gender, stack, password } = req.body;
+        const teacherExists = await teacherModel.findOne({ email: email.toLowerCase() });
+        if (teacherExists) {
+            return res.status(400).json({
                 message: `Teacher with Email : ${email} already exists`
             })
 
-          };
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
+        };
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-            const teacher = new teacherModel({
-                fullName,
-                email,
-                password: hashedPassword,
-                stack,
-                gender,
-            });
-            
-            const token = jwt.sign({teacherId: teacher._id}, process.env.JWT_SECRET, {expiresIn: '1h'});
+        const teacher = new teacherModel({
+            fullName,
+            email,
+            password: hashedPassword,
+            stack,
+            gender,
+        });
 
-            const link = `${req.protocol}://${req.get('host')}/api/v1/user-verify/${token}`
-            const firstName = teacher.fullName.split(' ')[1]
-            const html = signUpTemplate(link, firstName)
-            const mailOptions = {
-                subject: 'Welcome Email',
-                email:teacher.email,
-                html
-            };
-            await sendEmail(mailOptions);
+        const token = jwt.sign({ teacherId: teacher._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-            teacher.isAdmin = true;
+        const link = `${req.protocol}://${req.get('host')}/api/v1/user-verify/${token}`
+        const firstName = teacher.fullName.split(' ')[1]
+        const html = signUpTemplate(link, firstName)
+        const mailOptions = {
+            subject: 'Welcome Email',
+            email: teacher.email,
+            html
+        };
+        await sendEmail(mailOptions);
 
-            await teacher.save();
+        teacher.isAdmin = true;
+
+        await teacher.save();
 
 
-            return res.status(201).json ({
-                message: 'teacher created successfully',
-                data: teacher,
-                token
-            })
+        return res.status(201).json({
+            message: 'teacher created successfully',
+            data: teacher,
+            token
+        })
 
-    }catch (error) {
+    } catch (error) {
         console.log(error.message)
-        
-        res.status(500).json ({
-            message:" Error Registring Teacher"
+
+        res.status(500).json({
+            message: " Error Registring Teacher"
         })
     }
-    
+
 }
 
 
@@ -86,10 +86,10 @@ exports.verifyTeacher = async (req, res) => {
 
                     const newToken = await jwt.sign({ teacherId: teacher._id }, process.env.JWT_SECRET, { expiresIn: "1hour" });
                     const link = `${req.protocol}://${req.get("host")}/api/v1/user-verify/${newToken}`;
-                    
+
                     const firstName = teacher.fullName.split(" ")[0]
 
-                
+
                     const mailDetails = {
                         email: teacher.email,
                         subject: "Email verification",
@@ -103,7 +103,7 @@ exports.verifyTeacher = async (req, res) => {
                     });
 
                 };
-               
+
             } else {
                 console.log(payload)
                 const teacher = await teacherModel.findById(payload.teacherId);
@@ -137,77 +137,112 @@ exports.verifyTeacher = async (req, res) => {
     }
 };
 
-exports.login = async (req,res) => {
+exports.login = async (req, res) => {
     try {
-          const { email, password} = req.body;
-          
-          if(email === null) {
+        const { email, password } = req.body;
+
+        if (email === null) {
             return res.status(400).json({
                 message: "Please enter your email address"
             })
-          }
+        }
 
-          if(password === null) {
+        if (password === null) {
             return res.status(400).json({
                 message: "Please enter your password"
             })
         }
-        
-        const teacher =await teacherModel.findOne({ email: email.toLowerCase() });
+
+        const teacher = await teacherModel.findOne({ email: email.toLowerCase() });
         if (!teacher) {
-            return res.status(400).json ({
+            return res.status(400).json({
                 message: `teacher with email ${email} does not exist`
             })
         };
 
         const correctPassword = await bcrypt.compare(password, teacher.password)
-        if(!correctPassword){
+        if (!correctPassword) {
             return res.status(400).json({
                 message: "Incorrect Password"
             })
         }
- 
-          if (teacher.isVerified  ===false) {
-             return res.status(400).json ({
-                 message: "teacher not verified, please check your email to verify"
-             })
-          };
- 
-          const token = await jwt.sign({ teacherId: teacher._id }, process.env.JWT_SECRET, {expiresIn: '15min'});
- 
-           res.status(200).json ({
-             message: 'Login successful',
-             data: teacher,
-             token
-         })
- 
-     }catch (error) {
-         console.log(error.message)
-         res.status(500).json ({
-             message:" Error logging in teacher"
-         })
-     }
- }
 
+        if (teacher.isVerified === false) {
+            return res.status(400).json({
+                message: "teacher not verified, please check your email to verify"
+            })
+        };
 
-exports.getStudentByTeacher = async (req, res) => {
-    try {
-       const { id } = req.params
-       const teacher = await teacherModel.findById(id).populate('studentsId',[ "fullName", "email", "gender"]);
-       if (!teacher) {
-       return res.status(404).json({
-        message: 'Teacher not found'
-       })
-  }
-     res.status(200).json({
-        message: 'Teacher found',
-        data: teacher
-     });
+        const token = await jwt.sign({ teacherId: teacher._id }, process.env.JWT_SECRET, { expiresIn: '15min' });
 
-    }catch (error) {
+        res.status(200).json({
+            message: 'Login successful',
+            data: teacher,
+            token
+        })
+
+    } catch (error) {
+        console.log(error.message)
         res.status(500).json({
-            message: 'Internal Server Error:' +error.message
+            message: " Error logging in teacher"
         })
     }
 }
 
+
+exports.getStudentByTeacher = async (req, res) => {
+    try {
+        const { id } = req.params
+        const teacher = await teacherModel.findById(id).populate('studentsId', ["fullName", "email", "gender"]);
+        if (!teacher) {
+            return res.status(404).json({
+                message: 'Teacher not found'
+            })
+        }
+        res.status(200).json({
+            message: 'Teacher found',
+            data: teacher
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error:' + error.message
+        })
+    }
+}
+
+exports.updateStudent = async (req, res) => {
+    try {
+        const { teacherId } = req.user
+        const { studentId } = req.params
+        const { fullName, gender } = req.body;
+
+        const teacher = await teacherModel.findById(teacherId)
+
+        if (!teacher) {
+            return res.status(404).json({
+                message: 'Teacher Not Found'
+            })
+        };
+
+        const student = await studentModel.findById(studentId)
+        if (!student) {
+            return res.status(404).json({
+                message: 'student Not Found'
+            })
+        }
+        const data = {
+            fullName,
+            gender
+        }
+        const updateTeacher = await teacherModel.findByIdAndUpdate(teacher, data, { new: true })
+        res.status(200).json({
+            message: 'Student Successfully Updated',
+            data: updateTeacher
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error'
+        })
+    }
+}

@@ -8,4 +8,4 @@ router.post('/login', authenticate, logIn);
 router.get('/student',authenticate, getStudentDetails);
 
 
-module.exports = router;
+module.exports = router

@@ -1,4 +1,5 @@
 const studentModel = require ('../models/student');
+const teacherModel = require("../models/teacher")
 const bcrypt = require ('bcrypt');
 const sendEmail = require ('../middleware/nodemailer');
 const jwt = require ('jsonwebtoken');
@@ -94,7 +95,7 @@ exports.verifyTeacher = async (req, res) => {
                         html: html(link, firstName)
                     };
 
-                    await sendMail(mailDetails)
+                    await sendEmail(mailDetails)
 
                     res.status(200).json({
                         message: "Link expired, check your email for new verification link"
@@ -137,16 +138,35 @@ exports.verifyTeacher = async (req, res) => {
 
 exports.login = async (req,res) => {
     try {
-          const { email, fullName, password} = req.body;
-          const teacherExists =await teacherModel.findOne({ email: email.toLowerCase() });
+          const { email, password} = req.body;
+          
+          if(email === null) {
+            return res.status(400).json({
+                message: "Please enter your email address"
+            })
+          }
+
+          if(password === null) {
+            return res.status(400).json({
+                message: "Please enter your password"
+            })
+        }
+        
+        const teacher =await teacherModel.findOne({ email: email.toLowerCase() });
+        if (!teacher) {
+            return res.status(400).json ({
+                message: `teacher with email ${email} does not exist`
+            })
+        };
+
+        const correctPassword = await bcrypt.compare(password, teacher.password)
+        if(!correctPassword){
+            return res.status(400).json({
+                message: "Incorrect Password"
+            })
+        }
  
-          if (teacherExists === null) {
-             return res.status(400).json ({
-                 message: "Incorrect Password"
-             })
-          };
- 
-          if (teacherExists.isVerified  ===false) {
+          if (teacher.isVerified  ===false) {
              return res.status(400).json ({
                  message: "teacher not verified, please check your email to verify"
              })
@@ -155,7 +175,7 @@ exports.login = async (req,res) => {
           const token = await jwt.sign({ teacherId: teacherExists._id }, process.env.JWT_SECRET, {expiresIn: '1day'});
  
            res.status(200).json ({
-             message: 'successfully',
+             message: 'Login successful',
              data: teacher,
              token
          })
@@ -172,7 +192,7 @@ exports.login = async (req,res) => {
 exports.getStudentByTeacher = async (req, res) => {
     try {
        const { id } = req.params
-       const teacher = await teacherModel.findById(id).populate('studentId',[ "fullName", "email", "gender"]);
+       const teacher = await teacherModel.findById(id).populate('studentsId',[ "fullName", "email", "gender"]);
        if (!teacher) {
        return res.status(404).json({
         message: 'Teacher not found'

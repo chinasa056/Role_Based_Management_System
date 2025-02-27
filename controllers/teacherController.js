@@ -86,7 +86,7 @@ exports.verifyTeacher = async (req, res) => {
                     };
 
                     const newToken = await jwt.sign({ teacherId: teacher._id }, process.env.JWT_SECRET, { expiresIn: "1hour" });
-                    const link = `${req.protocol}://${req.get("host")}/api/v1/user-verify/${newToken}`;
+                    const link = `${req.protocol}://${req.get("host")}/api/v1/teacher-verify/${newToken}`;
 
                     const firstName = teacher.fullName.split(" ")[0]
 

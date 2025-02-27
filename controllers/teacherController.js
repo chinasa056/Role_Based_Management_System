@@ -29,7 +29,7 @@ exports.registerTeacher = async (req, res) => {
 
         const token = jwt.sign({ teacherId: teacher._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        const link = `${req.protocol}://${req.get('host')}/api/v1/user-verify/${token}`
+        const link = `${req.protocol}://${req.get('host')}/api/v1/teacher-verify/${token}`
         const firstName = teacher.fullName.split(' ')[1]
         const html = signUpTemplate(link, firstName)
         const mailOptions = {

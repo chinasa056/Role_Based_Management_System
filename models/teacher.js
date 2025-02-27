@@ -33,7 +33,7 @@ const teacherSchema= new mongoose.Schema({
         default: false
     },
     studentsId: [{
-        type: mongoose.SchemaTypes.objectId,
+        type: mongoose.SchemaTypes.ObjectId,
         ref: "Teachers"
     }],
 }, {timestamps: true});

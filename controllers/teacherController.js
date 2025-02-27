@@ -1,8 +1,9 @@
 const studentModel = require ('../models/student');
+const teacherModel = require("../models/teacher")
 const bcrypt = require ('bcrypt');
 const sendEmail = require ('../middleware/nodemailer');
 const jwt = require ('jsonwebtoken');
-const { signUpTemplate } = require('../utils/mailTemplates');
+const { signUpTemplate } = require('../utils/mailTemplate');
 
 exports.register =async (req, res) => {
     try {
@@ -95,7 +96,7 @@ exports.verifyTeacher = async (req, res) => {
                         html: html(link, firstName)
                     };
 
-                    await sendEmail(mailDetails);
+                    await sendEmail(mailDetails)
 
                     res.status(200).json({
                         message: "Link expired, check your email for new verification link"
@@ -139,24 +140,32 @@ exports.verifyTeacher = async (req, res) => {
 exports.login = async (req,res) => {
     try {
           const { email, password} = req.body;
-          if (!email ) {
-            return res.status(404).json ({
-                message: "Please Enter Either Email "
+          
+          if(email === null) {
+            return res.status(400).json({
+                message: "Please enter your email address"
             })
-         };
-         if (!password) {
-            return res.status(404).json ({
-                message: "Please Enter Your Password"
+          }
+
+          if(password === null) {
+            return res.status(400).json({
+                message: "Please enter your password"
             })
-         };
+        }
+        
+        const teacher =await teacherModel.findOne({ email: email.toLowerCase() });
+        if (!teacher) {
+            return res.status(400).json ({
+                message: `teacher with email ${email} does not exist`
+            })
+        };
 
-
-          const isPasswordCorrect = await bcrypt.compare(password, teacher.password);
-          if (isPasswordCorrect === false) {
-             return res.status(404).json ({
-                 message: "Incorrect Password"
-             })
-          };
+        const correctPassword = await bcrypt.compare(password, teacher.password)
+        if(!correctPassword){
+            return res.status(400).json({
+                message: "Incorrect Password"
+            })
+        }
  
           if (teacher.isVerified  ===false) {
              return res.status(400).json ({
@@ -167,7 +176,7 @@ exports.login = async (req,res) => {
           const token = await jwt.sign({ teacherId: teacher._id }, process.env.JWT_SECRET, {expiresIn: '15min'});
  
            res.status(200).json ({
-             message: 'successfully',
+             message: 'Login successful',
              data: teacher,
              token
          })
@@ -184,7 +193,7 @@ exports.login = async (req,res) => {
 exports.getStudentByTeacher = async (req, res) => {
     try {
        const { id } = req.params
-       const teacher = await teacherModel.findById(id).populate('studentId',[ "fullName", "stack", "gender"]);
+       const teacher = await teacherModel.findById(id).populate('studentsId',[ "fullName", "email", "gender"]);
        if (!teacher) {
        return res.status(404).json({
         message: 'Teacher not found'

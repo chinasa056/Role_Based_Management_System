@@ -27,7 +27,7 @@ const adminSChema = new mongoose.Schema({
         default: false
     },
 
-    isAdmin: {
+    isSuperAdmin: {
         type: Boolean,
         default: true
     },

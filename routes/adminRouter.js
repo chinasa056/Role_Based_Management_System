@@ -3,7 +3,7 @@ const { superAdminAuth, authenticate, adminAuth } = require("../middleware/authe
 
 const router = require("express").Router();
 
-router.post("/register/", registerAdmin)
+router.post("/register", registerAdmin)
 
 router.get("/all_teachers", superAdminAuth, getAllTeachers)
 

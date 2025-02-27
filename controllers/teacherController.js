@@ -1,7 +1,8 @@
 const studentModel = require('../models/student');
 const teacherModel = require("../models/teacher")
 const bcrypt = require('bcrypt');
-const sendEmail = require('../middleware/nodemailer');
+const { sendEmail } = require("../middleware/nodemailer");
+
 const jwt = require('jsonwebtoken');
 const { signUpTemplate } = require('../utils/mailTemplate');
 
@@ -50,8 +51,8 @@ exports.registerTeacher = async (req, res) => {
         })
 
     } catch (error) {
-        console.log(error.message)
-
+        console.error(error);
+        
         res.status(500).json({
             message: " Error Registring Teacher"
         })

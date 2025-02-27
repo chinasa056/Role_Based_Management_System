@@ -40,7 +40,8 @@ exports.createStudent = async (req, res) => {
       
         await student.save()
         res.status(201).json({
-            message: "Student created successfully" })
+            message: "Student created successfully",
+          data: newStudent })
 
   } catch (error) {
     console.log(error.message);

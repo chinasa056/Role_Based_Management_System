@@ -6,6 +6,4 @@ const router = require('express').Router();
 
 router.post('/register', superAdminAuth,  register)
 
-router.
-
 module.exports = router;

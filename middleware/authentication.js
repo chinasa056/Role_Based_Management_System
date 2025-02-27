@@ -1,4 +1,5 @@
 const adminModel = require("../models/admin");
+
 const jwt = require("jsonwebtoken");
 const teacherModel = require("../models/teacher");
 const studentModel = require("../models/student");

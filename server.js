@@ -2,7 +2,7 @@ require('./config/database')
 
 const express = require("express")
 const adminRouter = require("./routes/adminRouter")
-const teacherRouter = require("./routes/teacher")
+const teacherRouter = require("./routes/teacherRouter")
 const studentRouter = require("./routes/studendRouter")
 
 

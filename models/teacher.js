@@ -19,6 +19,11 @@ const teacherSchema= new mongoose.Schema({
         enum: ['Male', 'Female'],
         required: true
     },
+    stack: {
+        type: String,
+        enum: ['Frontend', 'Backend', 'ProductDesign'],
+        required: true
+    },
     isAdmin: {
         type: Boolean,
         default: true

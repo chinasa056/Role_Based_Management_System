@@ -36,17 +36,21 @@ exports.createStudent = async (req, res) => {
       teacherName: assignedTeacher.fullName
     })
 
+    assignedTeacher.studentsId.push(newStudent._id)
+    await assignedTeacher.save()
         
       
-        await student.save()
+        await newStudent.save()
+
         res.status(201).json({
             message: "Student created successfully",
           data: newStudent })
 
   } catch (error) {
-    console.log(error.message);
+    console.error(error);
+    
     res.status(500).json({
-      message: 'Internal Server Error' + error.message
+      message: 'Internal Server Error'
     })
   }
 };

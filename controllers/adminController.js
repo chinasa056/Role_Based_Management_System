@@ -37,7 +37,7 @@ exports.registerAdmin = async (req, res) => {
 
         const link = `${req.protocol}://${req.get(
         "host"
-    )}/api/v1/admin_verify/${token}`;
+        )}/api/v1/admin_verify/${token}`;
 
         const firstName = newAdmin.fullName.split(" ")[0];
 

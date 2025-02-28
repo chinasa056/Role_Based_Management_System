@@ -38,6 +38,8 @@ exports.createStudent = async (req, res) => {
 
     assignedTeacher.studentsId.push(newStudent._id)
     await assignedTeacher.save()
+
+    newStudent.isVerified = true
         
       
         await newStudent.save()

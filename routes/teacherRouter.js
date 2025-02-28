@@ -5,9 +5,9 @@ const { superAdminAuth, authenticate, adminAuth} = require('../middleware/authen
 const router = require('express').Router();
 
 router.post('/registerTeacher', superAdminAuth,  registerTeacher)
-router.post('/login', login)
+router.post('/login/teacher',  login)
 router.get('/teacher-verify/:token', adminAuth,  verifyTeacher)
-router.post('/getStudent/:id', adminAuth, getStudentByTeacher)
+router.get('/getStudent/:teacherId', adminAuth, getStudentByTeacher)
 router.patch('/update', adminAuth, updateStudent)
 
 

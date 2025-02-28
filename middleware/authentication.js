@@ -66,17 +66,32 @@ exports.adminAuth = async (req, res, next) => {
         }
 
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
+        console.log("Decoded: ",decodedToken)
+        
         let user;
         user = await adminModel.findById(decodedToken.userId);
+        console.log("Admin: ",user)
         if (!user) {
-            user = await teacherModel.findById(decodedToken.userId);
+            console.log("First: ",user)
+            user = await teacherModel.findById(decodedToken.teacherId);
         }
         if (!user) {
+            console.log("Second: ",user)
             return res.status(404).json({
                 message: "Authentication Failed: User not found",
             });
         }
+
+        // let user;
+        // user = await adminModel.findById(decodedToken.userId);
+        // user = await teacherModel.findById(decodedToken.userId)
+        // user = await studentModel.findById(decodedToken.userId)
+        // if (!user) {
+        //     return res.status(404).json({
+        //         message: "Authentication Failed: User not found",
+        //     });
+        // }
+
 
         if (user.isAdmin !== true && user.isSuperAdmin !== true) {
             return res.status(401).json({

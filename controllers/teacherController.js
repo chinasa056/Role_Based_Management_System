@@ -168,12 +168,6 @@ exports.login = async (req, res) => {
             })
         }
 
-        if (teacher.isVerified === false) {
-            return res.status(400).json({
-                message: "teacher not verified, please check your email to verify"
-            })
-        };
-
         const token = await jwt.sign({ teacherId: teacher._id }, process.env.JWT_SECRET, { expiresIn: '15min' });
 
         res.status(200).json({
@@ -193,8 +187,8 @@ exports.login = async (req, res) => {
 
 exports.getStudentByTeacher = async (req, res) => {
     try {
-        const { id } = req.params
-        const teacher = await teacherModel.findById(id).populate('studentsId', ["fullName", "email", "gender"]);
+        const { teacherId } = req.params
+        const teacher = await teacherModel.findById(teacherId).populate('studentsId', ["fullName", "email", "gender"]);
         if (!teacher) {
             return res.status(404).json({
                 message: 'Teacher not found'
@@ -214,36 +208,33 @@ exports.getStudentByTeacher = async (req, res) => {
 
 exports.updateStudent = async (req, res) => {
     try {
-        const { teacherId } = req.user
         const { studentId } = req.params
-        const { fullName, gender } = req.body;
 
-        const teacher = await teacherModel.findById(teacherId)
+        const { fullName} = req.body;
 
-        if (!teacher) {
+        const student = await studentModel.findById(studentId)
+
+        if (!student) {
             return res.status(404).json({
-                message: 'Teacher Not Found'
+                message: "student not found"
             })
         };
 
-        const student = await studentModel.findById(studentId)
-        if (!student) {
-            return res.status(404).json({
-                message: 'student Not Found'
-            })
-        }
         const data = {
-            fullName,
-            gender
+            fullName
         }
-        const updateTeacher = await teacherModel.findByIdAndUpdate(teacher, data, { new: true })
+
+        const updatedStudent = await studentModel.findByIdAndUpdate(studentId, data, { new: true })
+
         res.status(200).json({
-            message: 'Student Successfully Updated',
-            data: updateTeacher
+            message: "student updated successfully",
+            date: updatedStudent
         })
+
     } catch (error) {
+        console.error(error);
         res.status(500).json({
-            message: 'Internal Server Error'
-        })
+            message: "Internal server error",
+        });
     }
 }

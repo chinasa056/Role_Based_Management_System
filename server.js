@@ -7,7 +7,7 @@ const teacherRouter = require("./routes/teacherRouter")
 const studentRouter = require("./routes/studendRouter")
 
 
-const PORT = 2020;
+const PORT = process.env.PORT;
 
 const app = express();
 

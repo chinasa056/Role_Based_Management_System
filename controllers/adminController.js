@@ -36,7 +36,7 @@ exports.registerAdmin = async (req, res) => {
             { expiresIn: "1hour" });
 
         const link = `${req.protocol}://${req.get(
-        "host"
+            "host"
         )}/api/v1/admin_verify/${token}`;
 
         const firstName = newAdmin.fullName.split(" ")[0];
@@ -339,7 +339,7 @@ exports.loginAdmin = async (req, res) => {
         const token = jwt.sign(
             { userId: admin._id, isSuperAdmin: admin.isSuperAdmin },
             process.env.JWT_SECRET,
-            { expiresIn: "1hour" }
+            { expiresIn: "1day" }
         );
 
         res.status(200).json({
@@ -420,7 +420,8 @@ exports.getStudentByStack = async (req, res) => {
             data: student
         })
     } catch (error) {
-        console.log(error.message);
+        console.error(error);
+
         res.status(500).json({
             message: 'Error Getting student'
         })
@@ -467,7 +468,7 @@ exports.updateStudent = async (req, res) => {
     try {
         const { studentId } = req.params
 
-        const { fullName, stack } = req.body;
+        const { fullName} = req.body;
 
         const student = await studentModel.findById(studentId)
 
@@ -478,11 +479,10 @@ exports.updateStudent = async (req, res) => {
         };
 
         const data = {
-            fullName,
-            stack
+            fullName
         }
 
-        const updatedStudent = await studentModel.findByIdAndUpdate(student, data, { new: true })
+        const updatedStudent = await studentModel.findByIdAndUpdate(studentId, data, { new: true })
 
         res.status(200).json({
             message: "student updated successfully",
@@ -499,9 +499,10 @@ exports.updateStudent = async (req, res) => {
 
 exports.deleteStudent = async (req, res) => {
     try {
-        const { studentId } = req.params
+        const { studentId, teacherId } = req.params
 
         const student = await studentModel.findById(studentId)
+        const teacher = await teacherModel.findById(teacherId)
 
         if (!student) {
             return res.status(404).json({
@@ -509,7 +510,16 @@ exports.deleteStudent = async (req, res) => {
             })
         };
 
-        await studentModel.findByIdAndDelete(studentId)
+        if (!teacher) {
+            return res.status(404).json({
+                message: "student not found"
+            })
+        };
+
+        const deletedStudent = await studentModel.findByIdAndDelete(studentId)
+        if(deletedStudent) {
+            teacher.studentsId.pop(studentId)
+        }
 
         res.status(200).json({
             message: "student deleted successfully",
@@ -528,15 +538,15 @@ exports.deleteTeacher = async (req, res) => {
     try {
         const { teacherId } = req.params
 
-        const teacher = await studentModel.findById(teacherId)
+        const teacher = await teacherModel.findById(teacherId)
 
         if (!teacher) {
             return res.status(404).json({
-                message: "student not found"
+                message: "Teacher not found"
             })
         };
 
-        await studentModel.findByIdAndDelete(teacherId)
+        await teacherModel.findByIdAndDelete(teacherId)
 
         res.status(200).json({
             message: "teacher deleted successfully",
@@ -565,6 +575,7 @@ exports.removeTeacherAdminAccess = async (req, res) => {
         if (teacher.isAdmin === true) {
             teacher.isAdmin = false;
         }
+
         await teacher.save();
 
         res.status(200).json({
@@ -581,3 +592,52 @@ exports.removeTeacherAdminAccess = async (req, res) => {
 }
 
 
+// exports.updateStudent = async (req, res) => {
+//     try {
+//         const { studentId } = req.params;
+//         const { fullName, stack } = req.body;
+
+//         const student = await studentModel.findById(studentId);
+
+//         if (!student) {
+//             return res.status(404).json({
+//                 message: "Student not found"
+//             });
+//         }
+
+        
+//         let currentTeacher = await teacherModel.findOne({ studentsId: studentId });
+//         if (currentTeacher) {
+//             currentTeacher.studentsId.pull(studentId);
+//             await currentTeacher.save();
+//         }
+
+//         // Update the student's details
+//         const data = { fullName, stack };
+//         const updatedStudent = await studentModel.findByIdAndUpdate(studentId, data, { new: true });
+
+        
+//         const newTeacher = await teacherModel.findOne({ stack: data.stack });
+//         if (newTeacher) {
+//             newTeacher.studentsId.push(updatedStudent._id);
+//             await newTeacher.save();
+
+//             data.teacherName = newTeacher.fullName;
+//             data.assignedTeacher = newTeacher.fullName;
+//         }
+
+//         await updatedStudent.save();
+
+//         res.status(200).json({
+//             message: "Student updated successfully",
+//             data: updatedStudent
+//         });
+
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({
+//             message: "Internal server error",
+//             error: error.message
+//         });
+//     }
+// };
